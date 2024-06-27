@@ -2,7 +2,7 @@
  
 โปรเจกต์เกม Tic-Tac-Toe ที่พัฒนาด้วย React มีการใช้งาน useState และ useEffect hooks เพื่อจัดการสถานะของเกม และรองรับการเล่นในขนาด 4x4.
 **ทดลองเล่นได้ที่** 
-[TicTacToe4x4 By Phakkapon ](https://tictactoe4x4byphakkapon.netlify.app/)
+[TicTacToe4x4 wtih BOT By Phakkapon ]([https://tictactoe4x4byphakkapon.netlify.app/](https://tictactoe4x4with-bot.netlify.app/))
 # ตัวอย่าง Game
 ![download](https://github.com/PhakkaponPumpour/TicTacToe-4x4/assets/134637954/ec1dbb5a-b4de-4c0c-9328-7c7594d7f696)
 
