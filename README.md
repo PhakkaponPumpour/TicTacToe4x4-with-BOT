@@ -5,7 +5,8 @@
 **ทดลองเล่นได้ที่** 
 [TicTacToe4x4 wtih BOT By Phakkapon](https://tictactoe4x4with-bot.netlify.app/)
 # ตัวอย่าง Game
-![download](https://github.com/PhakkaponPumpour/TicTacToe-4x4/assets/134637954/ec1dbb5a-b4de-4c0c-9328-7c7594d7f696)
+![download (1)](https://github.com/PhakkaponPumpour/TicTacToe4x4-with-BOT/assets/134637954/8a29691f-e9bc-4eba-8bbc-e8e991bbdea8)
+
 
 ## การติดตั้ง (Installation)
 
