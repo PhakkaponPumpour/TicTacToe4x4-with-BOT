@@ -1,6 +1,7 @@
-# TicTacToe 4x4 Game with React (ยังไม่แก้)
+
+# TicTacToe 4x4 Game (Easy Bot) with React
  
-โปรเจกต์เกม Tic-Tac-Toe ที่พัฒนาด้วย React มีการใช้งาน useState และ useEffect hooks เพื่อจัดการสถานะของเกม และรองรับการเล่นในขนาด 4x4.
+โปรเจกต์เกม Tic-Tac-Toe ที่พัฒนาด้วย React มีการใช้งาน useState, useEffect hooks และ useCallback  เพื่อจัดการสถานะของเกม และรองรับการเล่นในขนาด 4x4.
 
 **ทดลองเล่นได้ที่** 
 [TicTacToe4x4 wtih BOT By Phakkapon](https://tictactoe4x4with-bot.netlify.app/)
@@ -12,11 +13,11 @@
 
 1.  **Clone โปรเจค**
 	```bash
-	git clone https://github.com/PhakkaponPumpour/TicTacToe-4x4.git
+	git clone https://github.com/PhakkaponPumpour/TicTacToe4x4-with-BOT.git
 	```
 2.  **จากนั้น cd ไปที่โปรเจคที่เราได้ Clone มา**
 	```bash 
-	cd TicTacToe-4x4
+	cd TicTacToe-4x4-with-BOT
 	```
 3.	**ติดตั้ง dependencies:**
 	```bash 
@@ -54,7 +55,7 @@
 - **TicTacToe.jsx**
 	- **การใช้งาน Component อื่นๆ ให้ทำงานใน TicTacToe.jsx**: 
 		```bash
-		import { useEffect, useState } from  "react";
+		import { useEffect, useState, useCallback } from  "react";
 		import Board from  "./Board";
 		import GameOver from  "./GameOver";
 		import GameState from  "./GameState";
@@ -109,7 +110,7 @@
 					} else {
 				setGameState(GameState.PlayerOWIN);
 				}
-				return;
+				return true;
 				}
 		}
 		```
@@ -119,7 +120,9 @@
 			const  allFilledIn  =  tiles.every((tile) =>  tile  !==  null);
 			if (allFilledIn) {
 				setGameState(GameState.DRAW);
+				return true;
 		}
+			return false;
 		```
 	- **การจัดการกับข้อมูลและสถานะ:**
 		- ใช้ `useState` เพื่อจัดการกับ `tiles` (เก็บข้อมูลช่องในกระดาน), `playerTurn` (ผู้เล่นที่ตามกำลังเล่น), `strikeClass` (รูปแบบเส้นทับ), และ `gameState` (สถานะของเกม: InProgress, Player X WIN, Player O WIN, หรือ DRAW).
@@ -134,9 +137,9 @@
 			const [gameState, setGameState] =  useState(GameState.InProgress);
 			//SWITCH PLAYER X AND O	
 		```
-		- การคลิกที่ช่องในกระดาน (`handleTileClick`) จะตรวจสอบสถานะเกม และเปลี่ยนตาผู้เล่นตามที่กำหนด.
+	- **การคลิกที่ช่องในกระดาน** (`handleTileClick`) จะตรวจสอบสถานะเกม และเปลี่ยนตาผู้เล่นตามที่กำหนด.
 		```bash
-		const  handleTileClick  = (index) => {
+			const  handleTileClick  = (index) => {
 			// IF gameState==>InProgress can not click anymore
 				if (gameState  !==  GameState.InProgress) {
 					return;
@@ -149,7 +152,16 @@
 			const  newTiles  = [...tiles];
 			newTiles[index] =  playerTurn;
 			setTiles(newTiles);
+			setGameHistory((prevHistory) => [...prevHistory, { tiles: newTiles, playerTurn }]);const  handleTileClick  =  useCallback((index) => {
+			if (gameState  !==  GameState.InProgress  ||  tiles[index] !==  null) {
+			return;
+			}
+			const  newTiles  = [...tiles];
+			newTiles[index] =  playerTurn;
+			setTiles(newTiles);
 			setGameHistory((prevHistory) => [...prevHistory, { tiles: newTiles, playerTurn }]);
+			setPlayerTurn(playerTurn  ===  player_X  ?  player_O  :  player_X);
+			}, [gameState, tiles, playerTurn]);
 			if (playerTurn  ===  player_X) {
 			setPlayerTurn(player_O);
 			} else {
@@ -157,7 +169,51 @@
 			}
 		};
 		```
-		- **ปุ่ม Reset**
+	-  **`gameHistory` และ `replayMove`**
+			- ดึงข้อมูลการเคลื่อนไหวจาก `gameHistory` ที่ตำแหน่ง `index`.
+			- อัพเดทสถานะ `tiles` ด้วยกระเบื้องจากประวัติที่เลือก.
+			- อัพเดทประวัติการเล่น
+			- ตั้งค่าบรรทัดขีดฆ่า
+		```bash
+			  const replayMove = (index) => {
+			  const history = gameHistory[index];
+			  setTiles(history.tiles);
+			  setPlayerTurn(history.playerTurn === player_X ? player_O : player_X);
+			  setGameState(GameState.InProgress);
+			  setGameHistory(gameHistory.slice(0, index + 1));
+			  setStrikClass(null);
+			  if (history.strikeClass) {
+				   setStrikClass(history.strikeClass);
+					  }
+				};
+		```
+	-  **botMove**
+		ฟังก์ชัน `botMove` ทำงานเมื่อถึงตาของบอท (ผู้เล่น O) มีการใช้ `useCallback` เพื่อป้องกันการสร้างฟังก์ชันใหม่ทุกครั้ง การทำงานของฟังก์ชันนี้มีดังนี้:
+		- ใช้ `map` และ `filter` เพื่อหาและช่างที่ว่าง (`null`).
+		- ใช้ `Math.random` เพื่อสุ่มเลือกช่องที่ว่างจากรายการที่ได้.
+		- เรียกใช้ `handleTileClick` ของช่องที่สุ่มเลือกเพื่อให้บอททำการเคลื่อนไหว.
+		```bash
+		const botMove = useCallback(() => {
+		const emptyTiles = tiles.map((value, index) => (value === null ? index : null)).filter(val => val !== null);
+		const randomIndex = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
+		handleTileClick(randomIndex);
+				}, [handleTileClick, tiles]);
+		```
+	-  **useEffect สำหรับการเคลื่อนไหวของบอท**
+		ฟังก์ชัน `useEffect` นี้ทำงานเมื่อถึงตาของบอทและสถานะของเกมยังคงเป็น `InProgress`:
+		- ตรวจสอบเงื่อนไข: ถ้าผู้เล่นปัจจุบัน (`playerTurn`) เป็นผู้เล่น O (`player_O`) และสถานะของเกมเป็น `InProgress` ฟังก์ชันจะทำงาน.
+		- ดีเลย์การเคลื่อนไหวของบอท: ใช้ `setTimeout`
+		- เรียกฟังก์ชัน `botMove` เพื่อให้บอททำการเคลื่อนไหว.
+		```bash
+		useEffect(() => {
+		if (playerTurn === player_O && gameState === GameState.InProgress){
+	    setTimeout(() => {
+	      botMove(); 
+	    }, 10); // delay for bot move
+		  }
+		}, [playerTurn, gameState, tiles, botMove]);
+		```
+	- **ปุ่ม Reset**
 		Reset เพื่อเริ่มเกมใหม่ทุกครั้งที่เกมจบลง หรือต้องการเริ่มเกมใหม่.
 		```bash
 		// RESET BUTTON
